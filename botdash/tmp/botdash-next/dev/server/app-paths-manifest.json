@@ -1,0 +1,10 @@
+{
+  "/announcements/page": "app/announcements/page.js",
+  "/api/announcement/route": "app/api/announcement/route.js",
+  "/api/channels/route": "app/api/channels/route.js",
+  "/api/guilds/route": "app/api/guilds/route.js",
+  "/api/moderation/actions/route": "app/api/moderation/actions/route.js",
+  "/api/moderation/warnings/route": "app/api/moderation/warnings/route.js",
+  "/moderation/page": "app/moderation/page.js",
+  "/page": "app/page.js"
+}
