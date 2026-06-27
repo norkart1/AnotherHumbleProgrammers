@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = getSession(req);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ownerId = process.env.BOT_OWNER_ID;
+  if (ownerId && session.discordId !== ownerId) return NextResponse.json({ error: 'Only the bot owner can change status settings' }, { status: 403 });
 
   try {
     const { type, text } = await req.json();

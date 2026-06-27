@@ -483,6 +483,10 @@
 @layer components;
 
 @layer utilities {
+  .pointer-events-none {
+    pointer-events: none;
+  }
+
   .collapse {
     visibility: collapse;
   }
@@ -932,7 +936,7 @@
     flex-shrink: 1;
   }
 
-  .grow {
+  .flex-grow, .grow {
     flex-grow: 1;
   }
 
@@ -960,6 +964,10 @@
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
+  .rotate-18 {
+    rotate: 18deg;
+  }
+
   .rotate-180 {
     rotate: 180deg;
   }
@@ -970,6 +978,10 @@
 
   .animate-spin {
     animation: var(--animate-spin);
+  }
+
+  .cursor-not-allowed {
+    cursor: not-allowed;
   }
 
   .cursor-pointer {
@@ -1218,6 +1230,11 @@
   .border-\[\#ed4245\]\/30 {
     border-color: #ed42454d;
     border-color: lab(55.1842% 65.6905 39.4486 / .3);
+  }
+
+  .border-\[\#faa61a\]\/30 {
+    border-color: #faa61a4d;
+    border-color: lab(75.245% 25.1465 74.9172 / .3);
   }
 
   .border-gray-700 {
@@ -1572,6 +1589,18 @@
     padding-inline: calc(var(--spacing) * 5);
   }
 
+  .px-31 {
+    padding-inline: calc(var(--spacing) * 31);
+  }
+
+  .px-45 {
+    padding-inline: calc(var(--spacing) * 45);
+  }
+
+  .px-48 {
+    padding-inline: calc(var(--spacing) * 48);
+  }
+
   .py-0 {
     padding-block: 0;
   }
@@ -1598,6 +1627,10 @@
 
   .py-3 {
     padding-block: calc(var(--spacing) * 3);
+  }
+
+  .py-3\.5 {
+    padding-block: calc(var(--spacing) * 3.5);
   }
 
   .py-4 {
@@ -1854,6 +1887,14 @@
     color: var(--color-gray-500);
   }
 
+  .opacity-50 {
+    opacity: .5;
+  }
+
+  .opacity-60 {
+    opacity: .6;
+  }
+
   .shadow {
     --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -1969,8 +2010,20 @@
     app-: ��;
   }
 
+  .\[app-\:\4 �\2 \] {
+    app-: �;
+  }
+
+  .\[app-\:\7 �\3 \] {
+    app-: �;
+  }
+
   .\[key\:\6 �4ng\] {
     key: �4ng;
+  }
+
+  .\[key\:\7 \e 4ng\] {
+    key: 4ng;
   }
 
   .\[key\:\7f s4ng\] {
