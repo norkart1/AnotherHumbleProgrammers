@@ -1,11 +1,17 @@
+import { cookies } from 'next/headers';
 import Sidebar from '@/components/Sidebar';
 import AnnouncementComposer from '@/components/AnnouncementComposer';
 import { Megaphone } from 'lucide-react';
+import { decodeSession } from '@/lib/session';
 
-export default function AnnouncementsPage() {
+export default async function AnnouncementsPage() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('botdash_session')?.value;
+  const session = sessionCookie ? decodeSession(sessionCookie) : null;
+
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar user={session ? { username: session.username, avatar: session.avatar } : null} />
       <main className="flex-1 lg:ml-60 pt-14 lg:pt-0 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
           <div className="mb-6 flex items-center gap-3">

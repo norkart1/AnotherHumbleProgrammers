@@ -16,6 +16,7 @@ externalPort = 80
 
 [userenv.shared]
 PORT = "5000"
+DISCORD_REDIRECT_URI = "https://6c9977cc-588a-4fd1-a063-8f1e08e6cac0-00-12zgrazfokc8j.pike.replit.dev/api/auth/callback"
 
 [workflows]
 runButton = "Project"

@@ -1,12 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getDb, getAdmin } from '@/lib/firebase';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const session = getSession(request);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const guildId = searchParams.get('guildId');
   if (!guildId) return NextResponse.json({ error: 'guildId required' }, { status: 400 });
+  if (!session.guildIds.includes(guildId)) return NextResponse.json({ error: 'Access denied to this server' }, { status: 403 });
 
   try {
     const db = getDb();
@@ -31,11 +36,15 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const session = getSession(request);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { guildId, action, targetId, targetTag, reason, duration, moderatorTag } = body;
     if (!guildId || !action) return NextResponse.json({ error: 'guildId and action required' }, { status: 400 });
+    if (!session.guildIds.includes(guildId)) return NextResponse.json({ error: 'Access denied to this server' }, { status: 403 });
 
     const db = getDb();
     const admin = getAdmin();
@@ -47,7 +56,7 @@ export async function POST(request: Request) {
       targetTag: targetTag || null,
       reason: reason || 'Action from dashboard',
       duration: duration || null,
-      moderatorTag: moderatorTag || 'Dashboard',
+      moderatorTag: moderatorTag || session.username,
       status: 'pending',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });

@@ -13,7 +13,12 @@ const nav = [
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
+interface SidebarUser {
+  username: string;
+  avatar: string | null;
+}
+
+function SidebarContent({ user, onClose }: { user: SidebarUser | null; onClose?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -22,6 +27,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     router.push('/login');
     router.refresh();
   }
+
+  const avatarUrl = user?.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.username}/${user.avatar}.png?size=32`
+    : null;
 
   return (
     <div className="flex flex-col h-full">
@@ -67,6 +76,19 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       </nav>
 
       <div className="px-3 py-4 border-t border-[#2c2f33] space-y-3">
+        {user && (
+          <div className="flex items-center gap-2.5 px-3 py-1">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={user.username} className="w-7 h-7 rounded-full flex-shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-[#5865f2] flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+                {user.username[0]?.toUpperCase()}
+              </div>
+            )}
+            <span className="text-[#dcddde] text-xs font-medium truncate">{user.username}</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 px-3">
           <span className="w-2 h-2 rounded-full bg-green-400 inline-block flex-shrink-0" />
           <span className="text-[#72767d] text-xs">Bot Online</span>
@@ -83,12 +105,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ user = null }: { user?: SidebarUser | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-[#1e2124] border-b border-[#2c2f33] flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setMobileOpen(true)}
@@ -104,7 +125,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 z-30 bg-black/60"
@@ -112,18 +132,16 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Mobile drawer */}
       <aside
         className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-[#1e2124] border-r border-[#2c2f33] z-40 transform transition-transform duration-200 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <SidebarContent onClose={() => setMobileOpen(false)} />
+        <SidebarContent user={user} onClose={() => setMobileOpen(false)} />
       </aside>
 
-      {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col fixed left-0 top-0 h-full w-60 bg-[#1e2124] border-r border-[#2c2f33] z-10">
-        <SidebarContent />
+        <SidebarContent user={user} />
       </aside>
     </>
   );

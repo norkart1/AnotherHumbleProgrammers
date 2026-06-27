@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/firebase';
 import { FieldValue } from 'firebase-admin/firestore';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = getSession(req);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const db = getDb();
-    const snap = await db
-      .collection('announcements')
+    const snap = await db.collection('announcements')
+      .where('guildId', 'in', session.guildIds.length > 0 ? session.guildIds : ['__none__'])
       .orderBy('createdAt', 'desc')
       .limit(20)
       .get();
@@ -20,11 +24,15 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const session = getSession(req);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await req.json();
     const { guildId, guildName, channelId, channelName, header, content, imageUrl, sender } = body;
 
     if (!guildId) return NextResponse.json({ error: 'guildId is required' }, { status: 400 });
+    if (!session.guildIds.includes(guildId)) return NextResponse.json({ error: 'Access denied to this server' }, { status: 403 });
     if (!header?.trim()) return NextResponse.json({ error: 'header is required' }, { status: 400 });
     if (!content?.trim()) return NextResponse.json({ error: 'content is required' }, { status: 400 });
 

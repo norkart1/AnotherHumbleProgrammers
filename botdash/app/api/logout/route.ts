@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { COOKIE_NAME } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/session';
 
 export async function POST() {
   const res = NextResponse.json({ success: true });
-  res.cookies.set(COOKIE_NAME, '', { maxAge: 0, path: '/' });
+  res.cookies.set(SESSION_COOKIE, '', { maxAge: 0, path: '/' });
   return res;
 }

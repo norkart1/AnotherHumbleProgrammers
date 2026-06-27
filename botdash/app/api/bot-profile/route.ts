@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/firebase';
 import { FieldValue } from 'firebase-admin/firestore';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = getSession(req);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const db = getDb();
     const snap = await db.collection('botConfig').doc('profile').get();
@@ -22,6 +26,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const session = getSession(req);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { type, dataUrl } = await req.json();
 
@@ -31,8 +38,6 @@ export async function POST(req: NextRequest) {
     if (!dataUrl || !dataUrl.startsWith('data:image/')) {
       return NextResponse.json({ error: 'Invalid image data' }, { status: 400 });
     }
-
-    // Rough size check — base64 of 800KB image ≈ 1.1MB string, near Firestore doc limit
     if (dataUrl.length > 900_000) {
       return NextResponse.json({ error: 'Image too large. Please use a smaller image.' }, { status: 400 });
     }

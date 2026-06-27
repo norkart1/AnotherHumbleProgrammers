@@ -1,9 +1,11 @@
+import { cookies } from 'next/headers';
 import { Users, MessageSquare, UserPlus, Wifi } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import StatCard from '@/components/StatCard';
 import ActivityChart from '@/components/ActivityChart';
 import RecentActivity from '@/components/RecentActivity';
 import { getDb } from '@/lib/firebase';
+import { decodeSession } from '@/lib/session';
 
 interface ChartPoint {
   date: string;
@@ -29,14 +31,20 @@ interface Guild {
   onlineCount: number;
 }
 
-async function getDashboardData() {
+async function getDashboardData(guildIds: string[]) {
   try {
+    if (guildIds.length === 0) return { guilds: [], chart: [], totals: { members: 0, online: 0, messagesToday: 0, joinsToday: 0 }, activity: [] };
+
     const db = getDb();
 
     const guildsSnap = await db.collection('guilds').get();
     if (guildsSnap.empty) return { guilds: [], chart: [], totals: {}, activity: [] };
 
-    const guilds = guildsSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Guild[];
+    const guilds = guildsSnap.docs
+      .filter((d) => guildIds.includes(d.id))
+      .map((d) => ({ id: d.id, ...d.data() })) as Guild[];
+
+    if (guilds.length === 0) return { guilds: [], chart: [], totals: { members: 0, online: 0, messagesToday: 0, joinsToday: 0 }, activity: [] };
 
     const last7Days: string[] = [];
     for (let i = 6; i >= 0; i--) {
@@ -45,28 +53,17 @@ async function getDashboardData() {
       last7Days.push(d.toISOString().split('T')[0]);
     }
 
-    // Fetch stats + activity from ALL guilds in parallel
     const [allStatsSnaps, actSnap] = await Promise.all([
       Promise.all(
         guilds.map((g) =>
-          db
-            .collection('guilds')
-            .doc(g.id)
-            .collection('dailyStats')
-            .where('date', 'in', last7Days)
-            .get()
+          db.collection('guilds').doc(g.id).collection('dailyStats')
+            .where('date', 'in', last7Days).get()
         )
       ),
-      db
-        .collection('guilds')
-        .doc(guilds[0].id)
-        .collection('recentActivity')
-        .orderBy('timestamp', 'desc')
-        .limit(20)
-        .get(),
+      db.collection('guilds').doc(guilds[0].id).collection('recentActivity')
+        .orderBy('timestamp', 'desc').limit(20).get(),
     ]);
 
-    // Aggregate all guilds' daily stats into one map keyed by date
     const statsMap: Record<string, Record<string, number>> = {};
     for (const snap of allStatsSnaps) {
       for (const doc of snap.docs) {
@@ -121,13 +118,17 @@ async function getDashboardData() {
 }
 
 export default async function DashboardPage() {
-  const { guilds, chart, totals, activity } = await getDashboardData();
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('botdash_session')?.value;
+  const session = sessionCookie ? decodeSession(sessionCookie) : null;
+
+  const { guilds, chart, totals, activity } = await getDashboardData(session?.guildIds ?? []);
 
   const hasData = guilds.length > 0;
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar user={session ? { username: session.username, avatar: session.avatar } : null} />
 
       <main className="flex-1 lg:ml-60 pt-14 lg:pt-0 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
@@ -136,7 +137,7 @@ export default async function DashboardPage() {
             <p className="text-[#72767d] text-sm mt-1">
               {hasData
                 ? `Monitoring ${guilds.length} server${guilds.length > 1 ? 's' : ''}`
-                : 'Waiting for bot data — start your bot and it will appear here'}
+                : 'No servers found — make sure you share a server with the bot'}
             </p>
           </div>
 
@@ -182,9 +183,9 @@ export default async function DashboardPage() {
               <div className="w-16 h-16 rounded-full bg-[#5865f222] flex items-center justify-center mx-auto mb-4">
                 <Users size={28} className="text-[#5865f2]" />
               </div>
-              <h3 className="text-white font-semibold mb-2">No data yet</h3>
+              <h3 className="text-white font-semibold mb-2">No servers found</h3>
               <p className="text-[#72767d] text-sm max-w-sm mx-auto">
-                Start your Discord bot and it will automatically sync your server stats here via Firebase.
+                Make sure you are in a server where this bot is active, then sign in again.
               </p>
             </div>
           )}

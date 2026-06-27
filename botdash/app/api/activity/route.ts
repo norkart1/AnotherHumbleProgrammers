@@ -1,18 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/firebase';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = getSession(req);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const db = getDb();
 
-    const guildsSnap = await db.collection('guilds').limit(1).get();
-    if (guildsSnap.empty) {
-      return NextResponse.json({ activity: [] });
-    }
+    if (session.guildIds.length === 0) return NextResponse.json({ activity: [] });
 
-    const guildId = guildsSnap.docs[0].id;
+    const guildId = session.guildIds[0];
 
     const actSnap = await db
       .collection('guilds')
@@ -36,7 +37,6 @@ export async function GET() {
 
     return NextResponse.json({ activity });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
   }
 }
