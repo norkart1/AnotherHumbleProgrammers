@@ -202,12 +202,18 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$ts__$5b$a
 ;
 ;
 ;
+function getBaseUrl() {
+    const redirectUri = process.env.DISCORD_REDIRECT_URI;
+    const u = new URL(redirectUri);
+    return `${u.protocol}//${u.host}`;
+}
 async function GET(req) {
-    const { searchParams, origin } = req.nextUrl;
+    const { searchParams } = req.nextUrl;
     const code = searchParams.get('code');
     const error = searchParams.get('error');
+    const base = getBaseUrl();
     if (error || !code) {
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(`${origin}/login?error=access_denied`);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(`${base}/login?error=access_denied`);
     }
     try {
         const accessToken = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["exchangeCode"])(code);
@@ -225,7 +231,7 @@ async function GET(req) {
             avatar: discordUser.avatar,
             guildIds: sharedGuildIds
         });
-        const res = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(`${origin}/`);
+        const res = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(`${base}/`);
         res.cookies.set(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["SESSION_COOKIE"], session, {
             httpOnly: true,
             secure: ("TURBOPACK compile-time value", "development") === 'production',
@@ -236,7 +242,7 @@ async function GET(req) {
         return res;
     } catch (err) {
         console.error('OAuth callback error:', err);
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(`${origin}/login?error=oauth_failed`);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(`${base}/login?error=oauth_failed`);
     }
 }
 }),

@@ -3,13 +3,20 @@ import { exchangeCode, getDiscordUser, getDiscordUserGuilds } from '@/lib/auth';
 import { encodeSession, SESSION_COOKIE } from '@/lib/session';
 import { getDb } from '@/lib/firebase';
 
+function getBaseUrl(): string {
+  const redirectUri = process.env.DISCORD_REDIRECT_URI!;
+  const u = new URL(redirectUri);
+  return `${u.protocol}//${u.host}`;
+}
+
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = req.nextUrl;
+  const { searchParams } = req.nextUrl;
   const code = searchParams.get('code');
   const error = searchParams.get('error');
+  const base = getBaseUrl();
 
   if (error || !code) {
-    return NextResponse.redirect(`${origin}/login?error=access_denied`);
+    return NextResponse.redirect(`${base}/login?error=access_denied`);
   }
 
   try {
@@ -34,7 +41,7 @@ export async function GET(req: NextRequest) {
       guildIds: sharedGuildIds,
     });
 
-    const res = NextResponse.redirect(`${origin}/`);
+    const res = NextResponse.redirect(`${base}/`);
     res.cookies.set(SESSION_COOKIE, session, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -46,6 +53,6 @@ export async function GET(req: NextRequest) {
     return res;
   } catch (err) {
     console.error('OAuth callback error:', err);
-    return NextResponse.redirect(`${origin}/login?error=oauth_failed`);
+    return NextResponse.redirect(`${base}/login?error=oauth_failed`);
   }
 }
