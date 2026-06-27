@@ -1,4 +1,5 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/api/auth/callback/route": "app/api/auth/callback/route.js",
   "/api/auth/route": "app/api/auth/route.js",
   "/api/logout/route": "app/api/logout/route.js",
